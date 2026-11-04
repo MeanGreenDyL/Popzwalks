@@ -1,0 +1,812 @@
+<title data-keep>Popz Walks</title>
+<meta data-keep name="claude:viewport-fit-sides" content="cover">
+<link data-keep rel="preconnect" href="https://fonts.googleapis.com">
+<link data-keep rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link data-keep rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Saira+Extra+Condensed:wght@500;700;800&display=swap">
+<style data-keep>
+/* Layout: Lions game-day scoreboard. Dark field, Honolulu Blue + Silver, helmet stripe under the header; summary first, scouting report, film (chart), box score (log). */
+:root {
+  color-scheme: dark;
+  --ink: #090d12;          /* page: Lions black */
+  --panel: #111922;
+  --panel-2: #172230;
+  --line: #233140;
+  --fg: #f3f6f8;
+  --muted: #93a0ab;
+  --blue: #0076b6;         /* Honolulu Blue */
+  --blue-hi: #39a6e6;      /* Honolulu Blue lifted for text on dark */
+  --silver: #b0b7bc;       /* Lions Silver */
+  --good: #4cc38a;
+  --warn: #f2b544;
+  --bad: #f2706a;
+  --f-display: "Saira Extra Condensed", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --f-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+body { background: var(--ink); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.pw-wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 56px; display: grid; gap: 28px; }
+.pw-wrap * { box-sizing: border-box; }
+.pw-num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.pw-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.pw-eyebrow { font-family: var(--f-display); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue-hi); font-size: 15px; }
+.pw-title { font-family: var(--f-display); font-weight: 800; font-size: clamp(52px, 11vw, 96px); line-height: .86; letter-spacing: .01em; margin: 4px 0 0; text-transform: uppercase; text-wrap: balance; }
+.pw-title span { color: var(--blue-hi); }
+.pw-sub { color: var(--muted); margin: 8px 0 0; max-width: 60ch; }
+.pw-stripe { height: 10px; border-radius: 2px; background: linear-gradient(to bottom, var(--silver) 0 3px, var(--blue) 3px 7px, var(--silver) 7px 10px); opacity: .9; }
+.pw-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pw-btn { font: 600 15px/1 var(--f-body); border-radius: 999px; padding: 12px 18px; border: 1px solid var(--blue); background: var(--blue); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.pw-btn:hover { background: #0a86cc; }
+.pw-btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.pw-btn.ghost:hover { border-color: var(--silver); }
+.pw-btn.small { padding: 7px 12px; font-size: 13px; }
+.pw-btn:disabled { opacity: .5; cursor: default; }
+.pw-btn:focus-visible, .pw-link:focus-visible, .pw-drop:focus-within { outline: 2px solid var(--blue-hi); outline-offset: 2px; }
+.pw-chip { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; }
+
+/* Section headings */
+.pw-h2 { font-family: var(--f-display); font-weight: 700; font-size: 30px; letter-spacing: .03em; text-transform: uppercase; margin: 0; line-height: 1; }
+.pw-h2 small { display: block; font-family: var(--f-body); font-size: 14px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); margin-top: 6px; }
+.pw-sec { display: grid; gap: 14px; }
+
+/* Latest walk scoreboard */
+.pw-board { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.pw-board-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; padding: 14px 18px; background: var(--blue); color: #fff; }
+.pw-board-top b { font-family: var(--f-display); font-size: 24px; letter-spacing: .05em; text-transform: uppercase; }
+.pw-board-top span { font-weight: 600; opacity: .92; }
+.pw-board-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.pw-stat { padding: 16px 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 2px; align-content: start; min-width: 0; }
+.pw-stat-label { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.pw-stat-val { font-family: var(--f-display); font-weight: 700; font-size: 44px; line-height: 1; }
+.pw-stat-val small { font-size: 20px; color: var(--muted); margin-left: 3px; font-weight: 500; }
+.pw-delta { font-size: 13px; font-weight: 600; }
+.pw-delta.good { color: var(--good); } .pw-delta.bad { color: var(--bad); } .pw-delta.flat { color: var(--muted); }
+.pw-board-foot { padding: 12px 18px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.pw-board-foot b { color: var(--fg); font-weight: 600; }
+
+/* Season totals */
+.pw-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.pw-tile { border-top: 3px solid var(--blue); background: var(--panel); padding: 14px 16px 16px; border-radius: 0 0 10px 10px; display: grid; gap: 2px; min-width: 0; }
+.pw-tile .pw-stat-val { font-size: 40px; }
+.pw-tile p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+
+/* Scouting report */
+.pw-scout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; align-items: start; }
+.pw-col { background: var(--panel); border-radius: 12px; padding: 16px 18px; display: grid; gap: 12px; min-width: 0; }
+.pw-col h3 { margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--f-display); font-size: 22px; letter-spacing: .06em; text-transform: uppercase; }
+.pw-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.pw-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pw-col li { display: grid; gap: 2px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pw-col li:first-child { border-top: 0; padding-top: 0; }
+.pw-col li b { font-weight: 600; }
+.pw-col li span { color: var(--muted); font-size: 14px; }
+
+/* Field (pace chart) */
+.pw-field { background: var(--panel); border-radius: 12px; padding: 14px 10px 8px; position: relative; }
+.pw-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 8px 8px; font-size: 13px; color: var(--muted); }
+.pw-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.pw-legend i.line { width: 16px; height: 0; border-radius: 0; border-top: 2px dashed var(--blue-hi); vertical-align: 3px; }
+.pw-legend i.goal { width: 16px; height: 0; border-radius: 0; border-top: 2px dashed var(--good); vertical-align: 3px; }
+#pw-chart { width: 100%; }
+#pw-chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.pw-tip { position: absolute; pointer-events: none; background: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.35; min-width: 150px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.pw-tip b { display: block; font-family: var(--f-display); font-size: 18px; letter-spacing: .03em; }
+.pw-tip span { color: var(--muted); }
+
+/* Two-up cards */
+.pw-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.pw-card { background: var(--panel); border-radius: 12px; padding: 16px 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.pw-card h3 { margin: 0; font-family: var(--f-display); font-size: 22px; letter-spacing: .05em; text-transform: uppercase; }
+.pw-card > p { margin: 0; color: var(--muted); font-size: 14px; }
+.pw-bar-row { display: grid; grid-template-columns: 92px 1fr 64px; align-items: center; gap: 10px; font-size: 14px; }
+.pw-bar-row .lab { color: var(--muted); }
+.pw-bar-row .val { text-align: right; font-weight: 600; }
+.pw-bar { height: 14px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+.pw-bar i { display: block; height: 100%; background: var(--blue); border-radius: 3px; }
+.pw-bar i.silver { background: var(--silver); }
+.pw-big-diff { font-family: var(--f-display); font-size: 40px; font-weight: 700; line-height: 1; color: var(--blue-hi); }
+
+/* Trophy case */
+.pw-trophies { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.pw-trophy { background: var(--panel); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; border: 1px solid var(--line); }
+.pw-trophy .pw-stat-val { font-size: 36px; color: var(--silver); }
+.pw-trophy p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+/* Detroit numbers */
+.pw-fun { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.pw-fun-item { background: var(--panel); border-radius: 12px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.pw-fun-item .pw-stat-val { font-size: 38px; color: var(--blue-hi); }
+.pw-fun-item p { margin: 0; color: var(--muted); font-size: 14px; }
+.pw-meter { height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden; }
+.pw-meter i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue-hi)); }
+
+/* Box score (log) */
+.pw-table-wrap { overflow-x: auto; background: var(--panel); border-radius: 12px; }
+.pw-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+.pw-table th { text-align: left; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 12px 12px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.pw-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pw-table tr:last-child td { border-bottom: 0; }
+.pw-table td.r, .pw-table th.r { text-align: right; }
+.pw-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
+.pw-tag.am { background: rgba(0,118,182,.25); color: var(--blue-hi); }
+.pw-tag.pm { background: rgba(176,183,188,.16); color: var(--silver); }
+.pw-tag.best { background: rgba(76,195,138,.18); color: var(--good); }
+.pw-row-btns { display: flex; gap: 6px; justify-content: flex-end; }
+.pw-link { background: none; border: 0; color: var(--blue-hi); font: 600 13px var(--f-body); cursor: pointer; padding: 4px 2px; }
+.pw-link.danger { color: var(--bad); }
+
+/* Add-a-walk panel */
+.pw-add { background: var(--panel); border: 1px solid var(--blue); border-radius: 14px; padding: 18px; display: grid; gap: 16px; }
+.pw-add-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.pw-drop { border: 2px dashed var(--line); border-radius: 12px; padding: 22px 16px; text-align: center; display: grid; gap: 8px; justify-items: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.pw-drop:hover, .pw-drop.over { border-color: var(--blue-hi); background: rgba(0,118,182,.08); }
+.pw-drop b { font-family: var(--f-display); font-size: 22px; letter-spacing: .04em; text-transform: uppercase; }
+.pw-drop span { color: var(--muted); font-size: 14px; }
+.pw-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pw-preview { display: flex; gap: 14px; align-items: center; }
+.pw-preview img { width: 72px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.pw-status { font-size: 14px; color: var(--muted); }
+.pw-status.err { color: var(--bad); } .pw-status.ok { color: var(--good); }
+.pw-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.pw-field-in { display: grid; gap: 4px; }
+.pw-field-in label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pw-field-in input, .pw-field-in select { font: 500 16px var(--f-body); color: var(--fg); background: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0; }
+.pw-field-in input:focus, .pw-field-in select:focus { outline: 2px solid var(--blue-hi); outline-offset: 0; border-color: transparent; }
+.pw-field-in .hint { font-size: 12px; color: var(--muted); }
+.pw-form-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.pw-foot { color: var(--muted); font-size: 13px; display: grid; gap: 6px; max-width: 80ch; }
+.pw-foot p { margin: 0; }
+
+@media (max-width: 520px) {
+  .pw-stat-val { font-size: 36px; }
+  .pw-bar-row { grid-template-columns: 80px 1fr 56px; }
+}
+@media (prefers-reduced-motion: reduce) { .pw-drop { transition: none; } }
+</style>
+
+<template id="pw-tpl" data-keep>
+<div class="pw-wrap">
+  <header class="pw-head">
+    <div>
+      <div class="pw-eyebrow" id="pw-eyebrow">Season stats</div>
+      <h1 class="pw-title">Popz <span>Walks</span></h1>
+      <p class="pw-sub">Every walk from the watch, turned into a game-day stat sheet: what's working, what to push on, and how far he's really gone.</p>
+    </div>
+    <div class="pw-actions">
+      <span class="pw-chip" id="pw-mode" hidden>View only</span>
+      <button class="pw-btn" id="pw-open-add" type="button" hidden>+ Add a walk</button>
+    </div>
+  </header>
+  <div class="pw-stripe" aria-hidden="true"></div>
+
+  <section class="pw-add" id="pw-add" hidden aria-labelledby="pw-add-title">
+    <div class="pw-add-head">
+      <div>
+        <h2 class="pw-h2" id="pw-add-title">Add a walk<small id="pw-add-sub">Drop in a photo or screenshot of the watch's Paused screen or the Fitness summary. Claude reads the numbers; you check them and save.</small></h2>
+      </div>
+      <button class="pw-btn ghost small" id="pw-close-add" type="button">Close</button>
+    </div>
+    <label class="pw-drop" id="pw-drop">
+      <input type="file" id="pw-file" accept="image/*">
+      <b>Choose a screenshot</b>
+      <span>or drag it here, or paste it (Ctrl/Cmd + V)</span>
+    </label>
+    <div class="pw-preview" id="pw-preview" hidden>
+      <img id="pw-preview-img" alt="Uploaded walk screenshot">
+      <div class="pw-status" id="pw-status" role="status" aria-live="polite"></div>
+    </div>
+    <div class="pw-status" id="pw-status2" role="status" aria-live="polite" hidden></div>
+    <form id="pw-form" class="pw-form" novalidate>
+      <div class="pw-field-in"><label for="f-date">Date</label><input id="f-date" type="date" required></div>
+      <div class="pw-field-in"><label for="f-clock">Clock on watch</label><input id="f-clock" placeholder="2:51" inputmode="numeric"></div>
+      <div class="pw-field-in"><label for="f-period">Morning or afternoon</label><select id="f-period"><option value="AM">Morning (AM)</option><option value="PM">Afternoon / evening (PM)</option></select></div>
+      <div class="pw-field-in"><label for="f-dur">Workout time</label><input id="f-dur" placeholder="27:32" required><span class="hint">mm:ss</span></div>
+      <div class="pw-field-in"><label for="f-dist">Miles</label><input id="f-dist" placeholder="2.00" inputmode="decimal" required></div>
+      <div class="pw-field-in"><label for="f-pace">Average pace</label><input id="f-pace" placeholder="13:40"><span class="hint">min:sec per mile, blank to work it out</span></div>
+      <div class="pw-field-in"><label for="f-cal">Active calories</label><input id="f-cal" placeholder="217" inputmode="numeric"></div>
+      <div class="pw-field-in"><label for="f-hr">Heart rate on screen</label><input id="f-hr" placeholder="122" inputmode="numeric"></div>
+      <div class="pw-field-in"><label for="f-avghr">Avg heart rate</label><input id="f-avghr" placeholder="optional" inputmode="numeric"></div>
+      <div class="pw-field-in"><label for="f-elev">Elevation gain (ft)</label><input id="f-elev" placeholder="optional" inputmode="numeric"></div>
+    </form>
+    <div class="pw-form-actions">
+      <button class="pw-btn" id="pw-save" type="button">Save walk</button>
+      <button class="pw-btn ghost" id="pw-reset" type="button">Clear</button>
+      <span class="pw-status" id="pw-save-status" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-latest-h">
+    <h2 class="pw-h2" id="pw-latest-h">Latest walk<small id="pw-latest-sub">Compared with his average on every other walk</small></h2>
+    <div class="pw-board">
+      <div class="pw-board-top"><b id="pw-latest-date">—</b><span id="pw-latest-rank">—</span></div>
+      <div class="pw-board-grid">
+        <div class="pw-stat"><span class="pw-stat-label">Time</span><span class="pw-stat-val pw-num" id="pw-l-dur">—</span><span class="pw-delta" id="pw-l-dur-d"></span></div>
+        <div class="pw-stat"><span class="pw-stat-label">Pace / mile</span><span class="pw-stat-val pw-num" id="pw-l-pace">—</span><span class="pw-delta" id="pw-l-pace-d"></span></div>
+        <div class="pw-stat"><span class="pw-stat-label">Distance</span><span class="pw-stat-val pw-num" id="pw-l-dist">—</span><span class="pw-delta flat" id="pw-l-dist-d"></span></div>
+        <div class="pw-stat"><span class="pw-stat-label">Active cal</span><span class="pw-stat-val pw-num" id="pw-l-cal">—</span><span class="pw-delta" id="pw-l-cal-d"></span></div>
+        <div class="pw-stat"><span class="pw-stat-label" id="pw-l-hr-lab">Heart rate</span><span class="pw-stat-val pw-num" id="pw-l-hr">—</span><span class="pw-delta flat" id="pw-l-hr-d"></span></div>
+      </div>
+      <div class="pw-board-foot" id="pw-latest-foot"></div>
+    </div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-season-h">
+    <h2 class="pw-h2" id="pw-season-h">Season totals</h2>
+    <div class="pw-totals">
+      <div class="pw-tile"><span class="pw-stat-label">Walks</span><span class="pw-stat-val pw-num" id="pw-t-n">—</span><p id="pw-t-n-p"></p></div>
+      <div class="pw-tile"><span class="pw-stat-label">Miles</span><span class="pw-stat-val pw-num" id="pw-t-mi">—</span><p id="pw-t-mi-p"></p></div>
+      <div class="pw-tile"><span class="pw-stat-label">Time on his feet</span><span class="pw-stat-val pw-num" id="pw-t-time">—</span><p id="pw-t-time-p"></p></div>
+      <div class="pw-tile"><span class="pw-stat-label">Active calories</span><span class="pw-stat-val pw-num" id="pw-t-cal">—</span><p id="pw-t-cal-p"></p></div>
+      <div class="pw-tile"><span class="pw-stat-label">Average speed</span><span class="pw-stat-val pw-num" id="pw-t-mph">—</span><p id="pw-t-mph-p"></p></div>
+    </div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-scout-h">
+    <h2 class="pw-h2" id="pw-scout-h">Scouting report<small>What the numbers say, good and bad</small></h2>
+    <div class="pw-scout">
+      <div class="pw-col"><h3><i class="pw-dot" style="background:var(--good)"></i>Winning</h3><ul id="pw-wins"></ul></div>
+      <div class="pw-col"><h3><i class="pw-dot" style="background:var(--warn)"></i>Room to grow</h3><ul id="pw-grow"></ul></div>
+      <div class="pw-col"><h3><i class="pw-dot" style="background:var(--bad)"></i>Not so good</h3><ul id="pw-bad"></ul></div>
+    </div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-film-h">
+    <h2 class="pw-h2" id="pw-film-h">Game film: pace, walk by walk<small>Higher on the field is faster. The dashed blue line is his trend.</small></h2>
+    <div class="pw-field">
+      <div class="pw-legend"><span><i style="background:var(--blue-hi)"></i>Morning walk</span><span><i style="background:var(--silver)"></i>Afternoon walk</span><span><i class="line"></i>Trend</span><span><i class="goal"></i>Goal: 13'00" a mile</span></div>
+      <div id="pw-chart"></div>
+      <div class="pw-tip" id="pw-tip" hidden></div>
+    </div>
+  </section>
+
+  <section class="pw-two">
+    <div class="pw-card">
+      <h3>Morning vs afternoon</h3>
+      <p id="pw-ampm-p"></p>
+      <div class="pw-big-diff pw-num" id="pw-ampm-diff">—</div>
+      <div class="pw-bar-row"><span class="lab">Morning</span><span class="pw-bar"><i id="pw-am-bar"></i></span><span class="val pw-num" id="pw-am-val">—</span></div>
+      <div class="pw-bar-row"><span class="lab">Afternoon</span><span class="pw-bar"><i class="silver" id="pw-pm-bar"></i></span><span class="val pw-num" id="pw-pm-val">—</span></div>
+      <p id="pw-ampm-cal"></p>
+    </div>
+    <div class="pw-card">
+      <h3>Mile by mile</h3>
+      <p id="pw-split-p"></p>
+      <div id="pw-splits"></div>
+      <p id="pw-split-note"></p>
+    </div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-trophy-h">
+    <h2 class="pw-h2" id="pw-trophy-h">Trophy case<small>Personal bests so far</small></h2>
+    <div class="pw-trophies" id="pw-trophies"></div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-det-h">
+    <h2 class="pw-h2" id="pw-det-h">By Detroit numbers<small>All of his walks added up</small></h2>
+    <div class="pw-fun" id="pw-fun"></div>
+  </section>
+
+  <section class="pw-sec" aria-labelledby="pw-log-h">
+    <h2 class="pw-h2" id="pw-log-h">Box score<small>Every walk logged, newest first</small></h2>
+    <div class="pw-table-wrap">
+      <table class="pw-table">
+        <thead><tr><th>#</th><th>Date</th><th>Clock</th><th class="r">Time</th><th class="r">Miles</th><th class="r">Pace</th><th class="r">Active cal</th><th class="r">Heart rate</th><th class="r" id="pw-th-edit"><span hidden>Edit</span></th></tr></thead>
+        <tbody id="pw-log"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="pw-foot">
+    <p>Numbers come from the watch's Paused screen and the Fitness app summary. The watch shows the heart rate at the moment it was paused, so only walks with a Fitness summary have a true average.</p>
+    <p id="pw-foot-order"></p>
+    <p>Steps (about 2,100 per mile at his pace), Coney dogs (about 300 calories each), Woodward Avenue (about 27 miles) and a Lions game (about 3 hours 10 minutes) are rough estimates for fun.</p>
+  </footer>
+</div>
+</template>
+
+<main id="app" data-keep></main>
+
+<script type="application/json" id="walk-data" data-keep>{"walks":[{"id":"w01","seq":1,"date":null,"clock":"1:10","period":"PM","duration":1707.99,"distance":2.00,"activeCal":212,"pace":851,"hr":120},{"id":"w02","seq":2,"date":null,"clock":"3:37","period":"PM","duration":1708.49,"distance":2.00,"activeCal":210,"pace":851,"hr":119},{"id":"w03","seq":3,"date":null,"clock":"2:58","period":"PM","duration":1729,"distance":2.00,"activeCal":209,"pace":861,"hr":68},{"id":"w04","seq":4,"date":null,"clock":"8:26","period":"AM","duration":1675.22,"distance":2.01,"activeCal":231,"pace":831,"hr":110},{"id":"w05","seq":5,"date":null,"clock":"2:01","period":"PM","duration":1714.72,"distance":2.00,"activeCal":210,"pace":854,"hr":122},{"id":"w06","seq":6,"date":null,"clock":"2:06","period":"PM","duration":1709.17,"distance":2.00,"activeCal":215,"pace":852,"hr":123},{"id":"w07","seq":7,"date":null,"clock":"1:39","period":"PM","duration":1664.29,"distance":2.00,"activeCal":213,"pace":827,"hr":131},{"id":"w08","seq":8,"date":null,"clock":"3:16","period":"PM","duration":1674.11,"distance":2.00,"activeCal":211,"pace":832,"hr":105},{"id":"w09","seq":9,"date":null,"clock":"2:46","period":"PM","duration":1691.73,"distance":2.00,"activeCal":207,"pace":842,"hr":122},{"id":"w10","seq":10,"date":null,"clock":"3:42","period":"PM","duration":1712.61,"distance":2.01,"activeCal":208,"pace":849,"hr":118},{"id":"w11","seq":11,"date":null,"clock":"6:52","period":"AM","duration":1596.46,"distance":2.01,"activeCal":240,"pace":793,"hr":120},{"id":"w12","seq":12,"date":null,"clock":"2:51","period":"PM","duration":1652.14,"distance":2.00,"activeCal":217,"pace":820,"hr":122},{"id":"w13","seq":13,"date":"2026-11-02","clock":"5:51","period":"AM","duration":1616.68,"distance":2.01,"activeCal":233,"pace":804,"hr":122,"avgHr":129,"totalCal":286,"elevation":6,"effort":"Moderate (4)","splits":[{"miles":1,"seconds":792,"hr":126},{"miles":1,"seconds":815,"hr":133},{"miles":0.01,"seconds":10,"hr":134}]}]}</script>
+
+<script data-keep>
+(function () {
+  "use strict";
+  var GOAL_PACE = 780;            // 13'00" per mile, the next milestone
+  var GOAL_MILES = 2.0;           // his standard walk
+  var WOODWARD_MI = 27, MARATHON_MI = 26.2, STEPS_PER_MI = 2100, CONEY_CAL = 300, GAME_SEC = 3 * 3600 + 600, FIELDS_PER_MI = 17.6;
+
+  var dataEl = document.getElementById("walk-data");
+  var DATA = { walks: [] };
+  try { DATA = JSON.parse(dataEl.textContent); } catch (e) {}
+  if (!Array.isArray(DATA.walks)) DATA.walks = [];
+
+  var app = document.getElementById("app");
+  app.appendChild(document.getElementById("pw-tpl").content.cloneNode(true));
+  function $(id) { return document.getElementById(id); }
+  function setText(id, t) { var el = $(id); if (el) el.textContent = t; }
+
+  /* ---------- formatting ---------- */
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function fmtPace(s) { s = Math.round(s); return Math.floor(s / 60) + "'" + pad(s % 60) + '"'; }
+  function fmtDur(s) { s = Math.round(s); var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60; return h ? h + ":" + pad(m) + ":" + pad(ss) : m + ":" + pad(ss); }
+  function fmtHM(s) { var h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); if (m === 60) { h++; m = 0; } return h + "h " + pad(m) + "m"; }
+  function fmtInt(n) { return Math.round(n).toLocaleString("en-US"); }
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  function parseISO(d) { if (!d) return null; var p = d.split("-"); if (p.length !== 3) return null; var dt = new Date(+p[0], +p[1] - 1, +p[2]); return isNaN(dt) ? null : dt; }
+  function fmtDate(d, long) { var dt = parseISO(d); if (!dt) return null; return (long ? DAYS[dt.getDay()] + ", " : "") + MONTHS[dt.getMonth()] + " " + dt.getDate(); }
+  function walkName(w, long) { return fmtDate(w.date, long) || ("Walk #" + w.seq); }
+  function paceOf(w) { return w.pace || (w.distance ? w.duration / w.distance : 0); }
+  function isAM(w) {
+    if (w.period === "AM") return true; if (w.period === "PM") return false;
+    var h = parseInt(String(w.clock || "").split(":")[0], 10); return h >= 4 && h <= 11;
+  }
+  function mean(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : 0; }
+  function secs(n) { n = Math.round(Math.abs(n)); return n + " sec"; }
+  function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+
+  /* ---------- parse user input ---------- */
+  function parseClockDur(str) {          // "28:34.72" or "1:02:03" -> seconds
+    if (str == null) return NaN; str = String(str).trim(); if (!str) return NaN;
+    var parts = str.split(":").map(function (p) { return parseFloat(p); });
+    if (parts.some(isNaN)) return NaN;
+    return parts.reduce(function (acc, p) { return acc * 60 + p; }, 0);
+  }
+  function parsePace(str) {              // 14'14" or 14:14 -> seconds
+    if (str == null) return NaN; str = String(str).trim().replace(/[’′']/g, ":").replace(/["”″]/g, "");
+    if (!str) return NaN; return parseClockDur(str);
+  }
+
+  /* ---------- stats ---------- */
+  function sorted() { return DATA.walks.slice().sort(function (a, b) { return a.seq - b.seq; }); }
+
+  function render() {
+    var W = sorted(), n = W.length;
+    if (!n) { setText("pw-eyebrow", "No walks logged yet"); return; }
+    var totMi = 0, totSec = 0, totCal = 0;
+    W.forEach(function (w) { totMi += w.distance || 0; totSec += w.duration || 0; totCal += w.activeCal || 0; });
+    var latest = W[n - 1], others = W.slice(0, -1);
+    var paces = W.map(paceOf);
+    var byPace = W.slice().sort(function (a, b) { return paceOf(a) - paceOf(b); });
+    var rank = byPace.indexOf(latest) + 1;
+    var am = W.filter(isAM), pm = W.filter(function (w) { return !isAM(w); });
+    var amPace = mean(am.map(paceOf)), pmPace = mean(pm.map(paceOf));
+    var amCal = mean(am.map(function (w) { return w.activeCal || 0; })), pmCal = mean(pm.map(function (w) { return w.activeCal || 0; }));
+    var k = Math.min(5, Math.floor(n / 2));
+    var firstK = mean(W.slice(0, k).map(paceOf)), lastK = mean(W.slice(n - k).map(paceOf));
+    var goalHits = W.filter(function (w) { return w.distance >= GOAL_MILES - 0.005; }).length;
+    var mph = totSec ? totMi / (totSec / 3600) : 0;
+    var best = byPace[0], slowest = byPace[n - 1];
+    var dated = W.filter(function (w) { return w.date; });
+
+    setText("pw-eyebrow", "Season stats · " + plural(n, "walk") + " logged");
+
+    /* Latest walk */
+    setText("pw-latest-date", walkName(latest, true));
+    setText("pw-latest-rank", "#" + rank + " of " + n + " for pace");
+    var oPace = mean(others.map(paceOf)), oDur = mean(others.map(function (w) { return w.duration; })), oCal = mean(others.map(function (w) { return w.activeCal || 0; }));
+    setText("pw-l-dur", fmtDur(latest.duration));
+    setText("pw-l-pace", fmtPace(paceOf(latest)));
+    $("pw-l-dist").innerHTML = ""; $("pw-l-dist").append(String((latest.distance || 0).toFixed(2))); var mi = document.createElement("small"); mi.textContent = "mi"; $("pw-l-dist").append(mi);
+    setText("pw-l-cal", latest.activeCal != null ? fmtInt(latest.activeCal) : "—");
+    function delta(id, diff, unitFn, lowerIsBetter, word) {
+      var el = $(id); if (!others.length) { el.textContent = "First walk logged"; el.className = "pw-delta flat"; return; }
+      var good = lowerIsBetter ? diff < 0 : diff > 0;
+      if (Math.abs(diff) < 0.5) { el.textContent = "Right on his average"; el.className = "pw-delta flat"; return; }
+      el.textContent = (good ? "▲ " : "▼ ") + unitFn(diff) + " " + word[good ? 0 : 1] + " than average";
+      el.className = "pw-delta " + (good ? "good" : "bad");
+    }
+    delta("pw-l-pace-d", paceOf(latest) - oPace, function (d) { return secs(d) + "/mi"; }, true, ["faster", "slower"]);
+    delta("pw-l-dur-d", latest.duration - oDur, secs, true, ["quicker", "longer"]);
+    delta("pw-l-cal-d", (latest.activeCal || 0) - oCal, function (d) { return fmtInt(Math.abs(d)) + " cal"; }, false, ["more", "fewer"]);
+    setText("pw-l-dist-d", latest.distance >= GOAL_MILES - 0.005 ? "2-mile goal hit" : "Short of 2 miles");
+    if (latest.avgHr) { setText("pw-l-hr-lab", "Avg heart rate"); setText("pw-l-hr", latest.avgHr); setText("pw-l-hr-d", latest.effort ? "Effort: " + latest.effort : "beats per minute"); }
+    else { setText("pw-l-hr-lab", "Heart rate at pause"); setText("pw-l-hr", latest.hr != null ? latest.hr : "—"); setText("pw-l-hr-d", "beats per minute"); }
+    var foot = $("pw-latest-foot"); foot.innerHTML = "";
+    function footItem(label, val) { var s = document.createElement("span"); s.append(label + " "); var b = document.createElement("b"); b.textContent = val; s.append(b); foot.append(s); }
+    footItem("Speed", (latest.distance / (latest.duration / 3600)).toFixed(2) + " mph");
+    footItem("Started", (latest.clock || "—") + " " + (isAM(latest) ? "AM" : "PM"));
+    if (latest.totalCal) footItem("Total calories", fmtInt(latest.totalCal));
+    if (latest.elevation != null) footItem("Climb", latest.elevation + " ft");
+
+    /* Season totals */
+    setText("pw-t-n", n);
+    setText("pw-t-n-p", goalHits === n ? "Every one of them was 2 miles or more" : goalHits + " of " + n + " reached 2 miles");
+    setText("pw-t-mi", totMi.toFixed(1));
+    setText("pw-t-mi-p", totMi >= MARATHON_MI ? "A full marathon, and then some" : (MARATHON_MI - totMi).toFixed(2) + " mi short of a full marathon");
+    setText("pw-t-time", fmtHM(totSec));
+    setText("pw-t-time-p", "About " + (totSec / GAME_SEC).toFixed(1) + " Lions games, kickoff to final whistle");
+    setText("pw-t-cal", fmtInt(totCal));
+    setText("pw-t-cal-p", "About " + (totCal / 3500).toFixed(2) + " lb worth of energy");
+    setText("pw-t-mph", mph.toFixed(1) + " mph");
+    setText("pw-t-mph-p", "Average pace " + fmtPace(totSec / totMi) + " a mile");
+
+    /* Scouting report */
+    var wins = [], grow = [], bad = [];
+    if (goalHits === n) wins.push(["Never misses the 2-mile mark", n + " for " + n + ". That kind of consistency is what builds fitness."]);
+    if (n >= 4 && lastK < firstK - 2) wins.push(["Getting faster", "His last " + k + " walks average " + fmtPace(lastK) + " a mile, " + secs(firstK - lastK) + " quicker than his first " + k + " (" + fmtPace(firstK) + ")."]);
+    if (mph >= 3) wins.push(["Brisk by any standard", "He averages " + mph.toFixed(1) + " mph. Brisk walking starts around 3 mph, so he's well past it."]);
+    if (rank <= Math.max(2, Math.ceil(n * 0.25)) && n > 2) wins.push(["Latest walk was a top performance", walkName(latest, false) + " ranked #" + rank + " of " + n + " for pace at " + fmtPace(paceOf(latest)) + "."]);
+
+    if (am.length && pm.length && pmPace - amPace > 5) grow.push(["Afternoons are slower", "Afternoon walks average " + fmtPace(pmPace) + ", " + secs(pmPace - amPace) + "/mi slower than mornings. Heat and sun likely play a part: go earlier or bring water."]);
+    var splitWalk = W.slice().reverse().find(function (w) { return Array.isArray(w.splits) && w.splits.filter(function (s) { return s.miles >= 0.99; }).length >= 2; });
+    if (splitWalk) {
+      var full = splitWalk.splits.filter(function (s) { return s.miles >= 0.99; });
+      var fade = full[full.length - 1].seconds - full[0].seconds;
+      if (fade > 5) grow.push(["Second-mile fade", "On " + walkName(splitWalk, false) + " mile 2 was " + secs(fade) + " slower than mile 1. Try picking it up for the last half mile."]);
+    }
+    var bestPace = paceOf(best);
+    if (bestPace > GOAL_PACE) grow.push(["Break 13 minutes a mile", "His best is " + fmtPace(bestPace) + ". Shaving " + secs(bestPace - GOAL_PACE) + " gets him there: a 2-mile walk in 26:00."]);
+    else wins.push(["Under 13 minutes a mile", "His best is " + fmtPace(bestPace) + ". Next target: 12'30\"."]);
+
+    var allTwo = W.every(function (w) { return w.distance < 2.5; });
+    if (allTwo && n >= 5) bad.push(["Same distance every time", "Every walk is about 2 miles. Bodies adapt fast, so a 2.5 or 3-mile day once a week keeps progress coming."]);
+    var elevWalks = W.filter(function (w) { return w.elevation != null; });
+    if (elevWalks.length && mean(elevWalks.map(function (w) { return w.elevation; })) < 50) bad.push(["Flat routes", "Only " + elevWalks[elevWalks.length - 1].elevation + " ft of climbing on " + walkName(elevWalks[elevWalks.length - 1], false) + ". A route with a few hills burns more and works the heart harder."]);
+    if (am.length && pm.length && amCal - pmCal > 5) bad.push(["Fewer calories in the afternoon", "About " + fmtInt(pmCal) + " active cal per afternoon walk vs " + fmtInt(amCal) + " in the morning."]);
+    bad.push(["Slowest walk: " + fmtPace(paceOf(slowest)), walkName(slowest, false) + " took " + fmtDur(slowest.duration) + ". That's the one to beat by the most."]);
+
+    [["pw-wins", wins], ["pw-grow", grow], ["pw-bad", bad]].forEach(function (pair) {
+      var ul = $(pair[0]); ul.innerHTML = "";
+      if (!pair[1].length) pair[1].push(["Nothing here yet", "More walks will fill this in."]);
+      pair[1].forEach(function (it) { var li = document.createElement("li"); var b = document.createElement("b"); b.textContent = it[0]; var s = document.createElement("span"); s.textContent = it[1]; li.append(b, s); ul.append(li); });
+    });
+
+    /* Morning vs afternoon */
+    if (am.length && pm.length) {
+      setText("pw-ampm-p", "Average pace, " + plural(am.length, "morning walk") + " vs " + plural(pm.length, "afternoon walk") + ". Shorter bar is faster.");
+      var diff = pmPace - amPace;
+      setText("pw-ampm-diff", diff >= 0 ? secs(diff) + "/mi faster in the morning" : secs(diff) + "/mi faster in the afternoon");
+      var mx = Math.max(amPace, pmPace);
+      $("pw-am-bar").style.width = (amPace / mx * 100) + "%"; $("pw-pm-bar").style.width = (pmPace / mx * 100) + "%";
+      setText("pw-am-val", fmtPace(amPace)); setText("pw-pm-val", fmtPace(pmPace));
+      setText("pw-ampm-cal", "Mornings also burn more: " + fmtInt(amCal) + " vs " + fmtInt(pmCal) + " active cal per walk.");
+      if (amCal <= pmCal) setText("pw-ampm-cal", "Calories per walk: " + fmtInt(amCal) + " morning vs " + fmtInt(pmCal) + " afternoon.");
+    } else {
+      setText("pw-ampm-p", "Needs at least one morning and one afternoon walk to compare.");
+      setText("pw-ampm-diff", "—"); setText("pw-ampm-cal", "");
+    }
+
+    /* Splits */
+    var sp = $("pw-splits"); sp.innerHTML = "";
+    if (splitWalk) {
+      var full2 = splitWalk.splits.filter(function (s) { return s.miles >= 0.99; });
+      setText("pw-split-p", "From the Fitness summary for " + walkName(splitWalk, true) + ". Shorter bar is faster.");
+      var mxs = Math.max.apply(null, full2.map(function (s) { return s.seconds; }));
+      full2.forEach(function (s, i) {
+        var row = document.createElement("div"); row.className = "pw-bar-row";
+        var lab = document.createElement("span"); lab.className = "lab"; lab.textContent = "Mile " + (i + 1);
+        var bar = document.createElement("span"); bar.className = "pw-bar"; var fill = document.createElement("i"); fill.style.width = (s.seconds / mxs * 100) + "%"; if (i) fill.className = "silver"; bar.append(fill);
+        var val = document.createElement("span"); val.className = "val pw-num"; val.textContent = fmtPace(s.seconds);
+        row.append(lab, bar, val); sp.append(row);
+      });
+      var hrs = full2.map(function (s) { return s.hr; }).filter(Boolean);
+      setText("pw-split-note", hrs.length >= 2 ? "Heart rate went from " + hrs[0] + " to " + hrs[hrs.length - 1] + " bpm as he went. Upload the Fitness app summary (not just the watch) to track splits on more walks." : "");
+    } else {
+      setText("pw-split-p", "No mile splits yet. Upload a Fitness app summary screenshot to see them.");
+      setText("pw-split-note", "");
+    }
+
+    /* Trophy case */
+    var quickest = W.filter(function (w) { return w.distance >= GOAL_MILES - 0.005; }).sort(function (a, b) { return a.duration - b.duration; })[0];
+    var mostCal = W.slice().sort(function (a, b) { return (b.activeCal || 0) - (a.activeCal || 0); })[0];
+    var longest = W.slice().sort(function (a, b) { return b.distance - a.distance || a.duration - b.duration; })[0];
+    var tro = $("pw-trophies"); tro.innerHTML = "";
+    [["Fastest pace", fmtPace(bestPace), best], ["Quickest 2 miles", quickest ? fmtDur(quickest.duration) : "—", quickest], ["Most calories", mostCal ? fmtInt(mostCal.activeCal) : "—", mostCal], ["Longest walk", longest.distance.toFixed(2) + " mi", longest]].forEach(function (t) {
+      var d = document.createElement("div"); d.className = "pw-trophy";
+      var l = document.createElement("span"); l.className = "pw-stat-label"; l.textContent = t[0];
+      var v = document.createElement("span"); v.className = "pw-stat-val pw-num"; v.textContent = t[1];
+      var p = document.createElement("p"); p.textContent = t[2] ? walkName(t[2], false) + " · " + (t[2].clock || "") + " " + (isAM(t[2]) ? "AM" : "PM") : "";
+      d.append(l, v, p); tro.append(d);
+    });
+
+    /* Detroit numbers */
+    var fun = $("pw-fun"); fun.innerHTML = "";
+    function funItem(label, val, text, pct) {
+      var d = document.createElement("div"); d.className = "pw-fun-item";
+      var l = document.createElement("span"); l.className = "pw-stat-label"; l.textContent = label;
+      var v = document.createElement("span"); v.className = "pw-stat-val pw-num"; v.textContent = val;
+      d.append(l, v);
+      if (pct != null) { var m = document.createElement("div"); m.className = "pw-meter"; var i = document.createElement("i"); i.style.width = Math.min(100, pct) + "%"; m.append(i); d.append(m); }
+      var p = document.createElement("p"); p.textContent = text; d.append(p); fun.append(d);
+    }
+    var wPct = totMi / WOODWARD_MI * 100;
+    funItem("Woodward Avenue", Math.round(wPct) + "%", totMi >= WOODWARD_MI ? "He's walked the whole of Woodward, Hart Plaza to Pontiac." : "of the way up Woodward, from Hart Plaza toward Pontiac. " + (WOODWARD_MI - totMi).toFixed(1) + " mi to go.", wPct);
+    funItem("Football fields", fmtInt(totMi * FIELDS_PER_MI), "Goal line to goal line, end zones not included. Ford Field would get tired first.", null);
+    funItem("Coney dogs burned", (totCal / CONEY_CAL).toFixed(1), "At about 300 calories a dog, with chili, mustard and onions.", null);
+    funItem("Steps (estimated)", fmtInt(totMi * STEPS_PER_MI), "About " + fmtInt(totMi * STEPS_PER_MI / n) + " steps per walk.", null);
+    var mPct = totMi / MARATHON_MI * 100;
+    funItem("Marathon", Math.round(mPct) + "%", totMi >= MARATHON_MI ? "Marathon distance done. Next stop: 50 miles." : "of a 26.2-mile marathon, one walk at a time.", mPct);
+
+    /* Box score */
+    var tb = $("pw-log"); tb.innerHTML = "";
+    W.slice().reverse().forEach(function (w) {
+      var tr = document.createElement("tr");
+      function td(t, cls) { var c = document.createElement("td"); if (cls) c.className = cls; c.textContent = t; tr.append(c); return c; }
+      td(String(w.seq));
+      td(fmtDate(w.date, true) || "Not logged");
+      var c = td((w.clock || "—")); var tag = document.createElement("span"); tag.className = "pw-tag " + (isAM(w) ? "am" : "pm"); tag.textContent = isAM(w) ? "AM" : "PM"; c.append(tag);
+      td(fmtDur(w.duration), "r"); td((w.distance || 0).toFixed(2), "r");
+      var pc = td(fmtPace(paceOf(w)), "r"); if (w === best) { var t2 = document.createElement("span"); t2.className = "pw-tag best"; t2.textContent = "BEST"; pc.append(t2); }
+      td(w.activeCal != null ? String(w.activeCal) : "—", "r");
+      td(w.avgHr ? w.avgHr + " avg" : (w.hr != null ? w.hr + " at pause" : "—"), "r");
+      var ec = document.createElement("td"); ec.className = "r";
+      if (canWrite) {
+        var box = document.createElement("div"); box.className = "pw-row-btns";
+        var eb = document.createElement("button"); eb.type = "button"; eb.className = "pw-link"; eb.textContent = "Edit"; eb.addEventListener("click", function () { startEdit(w.id); });
+        var rb = document.createElement("button"); rb.type = "button"; rb.className = "pw-link danger"; rb.textContent = "Remove";
+        rb.addEventListener("click", function () { if (rb.dataset.armed) { removeWalk(w.id, rb); } else { rb.dataset.armed = "1"; rb.textContent = "Confirm remove"; } });
+        box.append(eb, rb); ec.append(box);
+      }
+      tr.append(ec); tb.append(tr);
+    });
+    $("pw-th-edit").firstChild.hidden = !canWrite;
+
+    var undated = W.filter(function (w) { return !w.date; }).length;
+    setText("pw-foot-order", undated ? plural(undated, "walk") + " came from watch photos without a date, so their order follows the order the photos were shared, oldest first. Use Edit in the box score to add the real dates." : "");
+
+    lastW = W; drawChart();
+  }
+
+  /* ---------- pace chart ---------- */
+  var lastW = [];
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  function drawChart() {
+    var host = $("pw-chart"), tip = $("pw-tip"); host.innerHTML = ""; tip.hidden = true;
+    var W = lastW, n = W.length; if (!n) return;
+    var width = Math.max(280, host.clientWidth || 600), height = width < 500 ? 240 : 300;
+    var m = { l: 48, r: 14, t: 18, b: 30 };
+    var iw = width - m.l - m.r, ih = height - m.t - m.b;
+    var ps = W.map(paceOf);
+    var lo = Math.floor((Math.min.apply(null, ps.concat([GOAL_PACE])) - 10) / 15) * 15;
+    var hi = Math.ceil((Math.max.apply(null, ps) + 10) / 15) * 15;
+    function x(i) { return m.l + (n === 1 ? iw / 2 : i * iw / (n - 1)); }
+    function y(p) { return m.t + (p - lo) / (hi - lo) * ih; }
+    var svg = el("svg", { viewBox: "0 0 " + width + " " + height, width: "100%", role: "img", "aria-label": "Pace for each walk, with trend line and 13-minute goal" }, host);
+    // field stripes
+    var stripeW = iw / 10;
+    for (var s = 0; s < 10; s++) el("rect", { x: m.l + s * stripeW, y: m.t, width: stripeW, height: ih, fill: s % 2 ? "rgba(0,118,182,0.05)" : "rgba(0,118,182,0.10)" }, svg);
+    // y grid every 15s
+    for (var p = lo; p <= hi; p += 15) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(p), y2: y(p), stroke: "rgba(176,183,188,0.14)", "stroke-width": 1, fill: "none" }, svg);
+      if ((p - lo) % 30 === 0 || hi - lo <= 75) { var t = el("text", { x: m.l - 8, y: y(p) + 4, "text-anchor": "end", fill: "#93a0ab", "font-size": 11, "font-family": "Barlow, sans-serif" }, svg); t.textContent = fmtPace(p); }
+    }
+    // goal line
+    el("line", { x1: m.l, x2: m.l + iw, y1: y(GOAL_PACE), y2: y(GOAL_PACE), stroke: "#4cc38a", "stroke-width": 2, "stroke-dasharray": "6 5", fill: "none" }, svg);
+    var gt = el("text", { x: m.l + iw - 4, y: y(GOAL_PACE) - 6, "text-anchor": "end", fill: "#4cc38a", "font-size": 12, "font-weight": 600, "font-family": "Barlow, sans-serif" }, svg); gt.textContent = "GOAL 13'00\"";
+    // connecting line
+    var d = W.map(function (w, i) { return (i ? "L" : "M") + x(i).toFixed(1) + " " + y(ps[i]).toFixed(1); }).join(" ");
+    el("path", { d: d, stroke: "rgba(176,183,188,0.35)", "stroke-width": 1.5, fill: "none" }, svg);
+    // trend (least squares)
+    if (n >= 3) {
+      var xs = W.map(function (_, i) { return i; }), mx = mean(xs), my = mean(ps), num = 0, den = 0;
+      xs.forEach(function (xi, i) { num += (xi - mx) * (ps[i] - my); den += (xi - mx) * (xi - mx); });
+      var slope = den ? num / den : 0, b0 = my - slope * mx;
+      el("line", { x1: x(0), y1: y(b0), x2: x(n - 1), y2: y(b0 + slope * (n - 1)), stroke: "#39a6e6", "stroke-width": 2.5, "stroke-dasharray": "8 6", fill: "none" }, svg);
+    }
+    // x labels
+    var every = Math.ceil(n / Math.max(4, Math.floor(iw / 46)));
+    W.forEach(function (w, i) {
+      if (i % every && i !== n - 1) return;
+      var lt = el("text", { x: x(i), y: height - 8, "text-anchor": "middle", fill: "#93a0ab", "font-size": 11, "font-family": "Barlow, sans-serif" }, svg);
+      lt.textContent = fmtDate(w.date) || ("#" + w.seq);
+    });
+    // points
+    var bestIdx = ps.indexOf(Math.min.apply(null, ps));
+    W.forEach(function (w, i) {
+      var last = i === n - 1;
+      if (i === bestIdx) el("circle", { cx: x(i), cy: y(ps[i]), r: 10, fill: "none", stroke: "#4cc38a", "stroke-width": 2 }, svg);
+      el("circle", { cx: x(i), cy: y(ps[i]), r: last ? 7 : 5, fill: isAM(w) ? "#39a6e6" : "#b0b7bc", stroke: "#111922", "stroke-width": 2 }, svg);
+    });
+    var lw = W[n - 1], lab = el("text", { x: x(n - 1) - 10, y: y(ps[n - 1]) - 12, "text-anchor": "end", fill: "#f3f6f8", "font-size": 12, "font-weight": 600, "font-family": "Barlow, sans-serif" }, svg);
+    lab.textContent = "Latest " + fmtPace(ps[n - 1]);
+    // hover / tap targets
+    var colW = n === 1 ? iw : iw / (n - 1);
+    W.forEach(function (w, i) {
+      var r = el("rect", { x: x(i) - colW / 2, y: m.t, width: colW, height: ih, fill: "transparent", tabindex: 0 }, svg);
+      function show() {
+        tip.innerHTML = "";
+        var b = document.createElement("b"); b.textContent = fmtPace(ps[i]) + " / mi";
+        var l1 = document.createElement("div"); l1.textContent = walkName(w, true) + " · " + (w.clock || "") + " " + (isAM(w) ? "AM" : "PM");
+        var l2 = document.createElement("span"); l2.textContent = fmtDur(w.duration) + " for " + w.distance.toFixed(2) + " mi · " + (w.activeCal || "—") + " cal";
+        tip.append(b, l1, l2); tip.hidden = false;
+        var box = host.getBoundingClientRect(), par = host.parentNode.getBoundingClientRect();
+        var scale = box.width / width;
+        var px = (x(i) * scale) + (box.left - par.left), py = (y(ps[i]) * scale) + (box.top - par.top);
+        var tw = tip.offsetWidth, left = px + 14; if (left + tw > par.width - 6) left = px - tw - 14; if (left < 6) left = 6;
+        tip.style.left = left + "px"; tip.style.top = Math.max(6, py - 30) + "px";
+      }
+      r.addEventListener("pointerenter", show); r.addEventListener("click", show); r.addEventListener("focus", show);
+      r.addEventListener("pointerleave", function () { tip.hidden = true; }); r.addEventListener("blur", function () { tip.hidden = true; });
+    });
+  }
+  var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(drawChart, 120); });
+
+  /* ---------- writing: add / edit / remove ---------- */
+  var canWrite = false, artifactNS = null, sampleFn = null, canImages = false, editingId = null;
+
+  function buildDocument(newData) {
+    var parts = [];
+    document.querySelectorAll("[data-keep]").forEach(function (node) {
+      if (node.id === "walk-data") {
+        var json = JSON.stringify(newData).replace(/</g, "\\u003c");
+        parts.push('<script type="application/json" id="walk-data" data-keep>' + json + "<\/script>");
+      } else if (node.id === "app") {
+        parts.push('<main id="app" data-keep></main>');
+      } else {
+        parts.push(node.outerHTML);
+      }
+    });
+    var resetEl = document.head && document.head.querySelector("style");
+    var reset = resetEl ? resetEl.textContent : ":root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}";
+    return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + reset + "</style></head><body>" + parts.join("\n") + "</body></html>";
+  }
+
+  function saveData(newData, statusEl) {
+    if (!artifactNS) { statusEl.className = "pw-status err"; statusEl.textContent = "Saving isn't available in this view. Open the dashboard on claude.ai to add walks."; return Promise.resolve(false); }
+    statusEl.className = "pw-status"; statusEl.textContent = "Saving…";
+    return artifactNS.publish(buildDocument(newData)).then(function () {
+      statusEl.className = "pw-status ok"; statusEl.textContent = "Saved. Updating the dashboard…"; return true;
+    }).catch(function (e) {
+      var code = e && e.code;
+      statusEl.className = "pw-status err";
+      if (code === "conflict") statusEl.textContent = "Someone else just saved a change. The dashboard is reloading with it; add this walk again after it loads.";
+      else if (code === "not_writer" || code === "not_granted" || code === "consent_required" || code === "capability_disabled" || code === "capability_removed") { statusEl.textContent = "This copy is view only. Ask the person who shared it for edit access to add walks."; setReadOnly(); }
+      else if (code === "rate_limited") statusEl.textContent = "Too many saves in a row. Wait a minute and try again.";
+      else statusEl.textContent = "Couldn't save just now. Try again in a moment.";
+      return false;
+    });
+  }
+
+  function setReadOnly() { canWrite = false; $("pw-open-add").hidden = true; $("pw-mode").hidden = false; $("pw-add").hidden = true; render(); }
+
+  function removeWalk(id, btn) {
+    var next = { walks: DATA.walks.filter(function (w) { return w.id !== id; }) };
+    var st = document.createElement("span"); st.className = "pw-status"; btn.replaceWith(st);
+    saveData(next, st);
+  }
+
+  /* form helpers */
+  var F = { date: "f-date", clock: "f-clock", period: "f-period", dur: "f-dur", dist: "f-dist", pace: "f-pace", cal: "f-cal", hr: "f-hr", avghr: "f-avghr", elev: "f-elev" };
+  function fv(k) { return $(F[k]).value.trim(); }
+  function setF(k, v) { $(F[k]).value = v == null ? "" : v; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function resetForm() {
+    Object.keys(F).forEach(function (k) { setF(k, ""); });
+    setF("date", todayISO()); setF("period", new Date().getHours() < 12 ? "AM" : "PM");
+    editingId = null; $("pw-save").textContent = "Save walk";
+    $("pw-preview").hidden = true; $("pw-status2").hidden = true; setText("pw-save-status", ""); $("pw-file").value = "";
+    $("pw-add-title").firstChild.nodeValue = "Add a walk";
+  }
+  function openAdd() { $("pw-add").hidden = false; $("pw-add").scrollIntoView({ behavior: "smooth", block: "start" }); }
+
+  function startEdit(id) {
+    var w = DATA.walks.find(function (x) { return x.id === id; }); if (!w) return;
+    resetForm(); editingId = id;
+    $("pw-add-title").firstChild.nodeValue = "Edit walk #" + w.seq;
+    setF("date", w.date || ""); setF("clock", w.clock || ""); setF("period", isAM(w) ? "AM" : "PM");
+    setF("dur", fmtDur(w.duration)); setF("dist", (w.distance || 0).toFixed(2)); setF("pace", w.pace ? fmtPace(w.pace).replace("'", ":").replace('"', "") : "");
+    setF("cal", w.activeCal); setF("hr", w.hr); setF("avghr", w.avgHr); setF("elev", w.elevation);
+    $("pw-save").textContent = "Save changes";
+    openAdd();
+  }
+
+  function onSave() {
+    var st = $("pw-save-status");
+    var dur = parseClockDur(fv("dur")), dist = parseFloat(fv("dist"));
+    if (!(dur > 0)) { st.className = "pw-status err"; st.textContent = "Add the workout time as minutes:seconds, like 27:32."; return; }
+    if (!(dist > 0)) { st.className = "pw-status err"; st.textContent = "Add the distance in miles, like 2.00."; return; }
+    var pace = parsePace(fv("pace")); if (!(pace > 0)) pace = Math.round(dur / dist);
+    function num(k) { var v = parseFloat(fv(k)); return isNaN(v) ? null : Math.round(v); }
+    var base = editingId ? DATA.walks.find(function (x) { return x.id === editingId; }) : null;
+    var w = Object.assign({}, base || {}, {
+      date: fv("date") || null, clock: fv("clock") || null, period: fv("period"),
+      duration: Math.round(dur * 100) / 100, distance: Math.round(dist * 100) / 100, pace: Math.round(pace),
+      activeCal: num("cal"), hr: num("hr")
+    });
+    var ah = num("avghr"), ev = num("elev");
+    if (ah != null) w.avgHr = ah; else delete w.avgHr;
+    if (ev != null) w.elevation = ev; else delete w.elevation;
+    if (pendingExtras && !editingId) { if (pendingExtras.totalCal) w.totalCal = pendingExtras.totalCal; if (pendingExtras.splits) w.splits = pendingExtras.splits; if (pendingExtras.effort) w.effort = pendingExtras.effort; }
+    var walks = DATA.walks.slice();
+    if (base) { walks = walks.map(function (x) { return x.id === base.id ? w : x; }); }
+    else {
+      var dup = walks.find(function (x) { return Math.abs(x.duration - w.duration) < 1 && Math.abs(x.distance - w.distance) < 0.005; });
+      if (dup && !st.dataset.dupOk) { st.className = "pw-status err"; st.textContent = "This looks like " + walkName(dup, false) + ", which is already logged. Press Save again to add it anyway."; st.dataset.dupOk = "1"; return; }
+      var maxSeq = walks.reduce(function (a, x) { return Math.max(a, x.seq || 0); }, 0);
+      w.seq = maxSeq + 1; w.id = "w" + Date.now().toString(36);
+    }
+    delete st.dataset.dupOk;
+    $("pw-save").disabled = true;
+    saveData({ walks: walks.concat(base ? [] : [w]) }, st).then(function () { $("pw-save").disabled = false; });
+  }
+
+  /* reading a screenshot with Claude */
+  var pendingExtras = null, readCtl = null;
+  var PROMPT = [
+    "This image is a photo or screenshot of an Apple Watch workout screen (usually the 'Paused' screen of an Outdoor Walk) or the iPhone Fitness app's Workout Details page.",
+    "Read the workout numbers exactly as shown. Reply with only one JSON object with these keys:",
+    '{"isWorkout": true|false, "date": "YYYY-MM-DD" or null (only if a date is visible), "clock": "h:mm" (the time of day shown at the top of the watch, or the workout start time on the Fitness page) or null,',
+    '"durationText": "mm:ss.xx" workout time as shown, "distanceMiles": number, "activeCalories": number or null, "paceText": "m:ss" average pace per mile or null,',
+    '"heartRate": number or null (the heart rate number shown next to the heart on the watch), "avgHeartRate": number or null (only from an \'Avg. Heart Rate\' label), "totalCalories": number or null, "elevationFt": number or null, "effort": string or null,',
+    '"splits": [{"miles": number, "seconds": number, "hr": number or null}] or null (only from a Splits table; seconds = the split time)}',
+    'Example: {"isWorkout": true, "date": null, "clock": "2:51", "durationText": "27:32.14", "distanceMiles": 2.0, "activeCalories": 217, "paceText": "13:40", "heartRate": 122, "avgHeartRate": null, "totalCalories": null, "elevationFt": null, "effort": null, "splits": null}',
+    "If the image is not a workout screen, reply {\"isWorkout\": false}."
+  ].join("\n");
+
+  function handleFile(file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    var url = URL.createObjectURL(file);
+    $("pw-preview-img").src = url; $("pw-preview").hidden = false;
+    var st = $("pw-status");
+    if (!sampleFn || !canImages) { st.className = "pw-status"; st.textContent = "Reading screenshots isn't available in this view. Type the numbers from the photo into the boxes below."; return; }
+    st.className = "pw-status"; st.textContent = "Reading the numbers… this can take up to a minute.";
+    if (readCtl) readCtl.abort(); readCtl = new AbortController();
+    sampleFn.json(PROMPT, { images: [file], signal: readCtl.signal }).then(function (r) {
+      if (!r || r.isWorkout === false) { st.className = "pw-status err"; st.textContent = "That doesn't look like a workout screen. Try the watch's Paused screen or the Fitness app summary."; return; }
+      var keepDate = fv("date");
+      if (r.date && /^\d{4}-\d{2}-\d{2}$/.test(r.date)) setF("date", r.date); else setF("date", keepDate || todayISO());
+      if (r.clock) { setF("clock", r.clock); var h = parseInt(r.clock, 10); setF("period", h >= 4 && h <= 11 ? "AM" : "PM"); }
+      if (r.durationText) { var ds = parseClockDur(r.durationText); if (ds > 0) setF("dur", fmtDur(ds)); }
+      if (r.distanceMiles != null) setF("dist", Number(r.distanceMiles).toFixed(2));
+      if (r.paceText) setF("pace", String(r.paceText).replace(/[’′']/g, ":").replace(/["”″]/g, ""));
+      if (r.activeCalories != null) setF("cal", r.activeCalories);
+      if (r.heartRate != null) setF("hr", r.heartRate);
+      if (r.avgHeartRate != null) setF("avghr", r.avgHeartRate);
+      if (r.elevationFt != null) setF("elev", r.elevationFt);
+      pendingExtras = { totalCal: r.totalCalories || null, effort: r.effort || null, splits: Array.isArray(r.splits) && r.splits.length ? r.splits.map(function (s) { return { miles: Number(s.miles), seconds: Number(s.seconds), hr: s.hr != null ? Number(s.hr) : null }; }).filter(function (s) { return s.miles > 0 && s.seconds > 0; }) : null };
+      st.className = "pw-status ok"; st.textContent = "Got it. Check the numbers below, fix anything that's off, then press Save walk.";
+    }).catch(function (e) {
+      var code = e && e.code; st.className = "pw-status err";
+      if (code === "cancelled") { st.textContent = ""; return; }
+      if (code === "not_granted") st.textContent = "Reading screenshots needs permission. You can still type the numbers in below.";
+      else if (code === "rate_limited") st.textContent = "Too many reads in a row. Wait a minute, or type the numbers in below.";
+      else if (code === "image_rejected") st.textContent = "That image couldn't be read. Try a JPEG or PNG screenshot.";
+      else st.textContent = "Couldn't read that one. Type the numbers in below, or try a clearer photo.";
+    });
+  }
+
+  function wireAdd() {
+    $("pw-open-add").addEventListener("click", function () { resetForm(); openAdd(); });
+    $("pw-close-add").addEventListener("click", function () { $("pw-add").hidden = true; if (readCtl) readCtl.abort(); });
+    $("pw-reset").addEventListener("click", resetForm);
+    $("pw-save").addEventListener("click", onSave);
+    $("pw-form").addEventListener("submit", function (e) { e.preventDefault(); onSave(); });
+    $("pw-file").addEventListener("change", function (e) { pendingExtras = null; handleFile(e.target.files && e.target.files[0]); });
+    var drop = $("pw-drop");
+    ["dragenter", "dragover"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+    ["dragleave", "drop"].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+    drop.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; pendingExtras = null; handleFile(f); });
+    document.addEventListener("paste", function (e) {
+      if ($("pw-add").hidden) return;
+      var items = (e.clipboardData && e.clipboardData.files) || [];
+      if (items.length) { e.preventDefault(); pendingExtras = null; handleFile(items[0]); }
+    });
+  }
+
+  resetForm(); wireAdd(); render();
+
+  /* light up writing where this view allows it */
+  if (window.claude && typeof window.claude.use === "function") {
+    Promise.all([
+      window.claude.use("artifact").catch(function () { return null; }),
+      window.claude.use("sample").catch(function () { return null; }),
+      window.claude.use("user").catch(function () { return null; })
+    ]).then(function (res) {
+      artifactNS = res[0]; sampleFn = res[1]; var user = res[2];
+      var editP = user && user.canEdit ? user.canEdit().catch(function () { return null; }) : Promise.resolve(artifactNS ? null : false);
+      var limP = sampleFn && sampleFn.limits ? sampleFn.limits().catch(function () { return null; }) : Promise.resolve(null);
+      return Promise.all([editP, limP]);
+    }).then(function (r) {
+      var editable = r[0]; canImages = !!(r[1] && r[1].images);
+      if (artifactNS && editable !== false) {
+        canWrite = true; $("pw-open-add").hidden = false; $("pw-mode").hidden = true;
+        if (!canImages) setText("pw-add-sub", "Type in the numbers from the watch's Paused screen or the Fitness summary, then save.");
+        render();
+      } else { $("pw-mode").hidden = false; }
+    });
+  } else { $("pw-mode").hidden = false; }
+})();
+</script>
