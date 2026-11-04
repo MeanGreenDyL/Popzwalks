@@ -104,7 +104,13 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
 .pw-bar { height: 14px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
 .pw-bar i { display: block; height: 100%; background: var(--blue); border-radius: 3px; }
 .pw-bar i.silver { background: var(--silver); }
-.pw-big-diff { font-family: var(--f-display); font-size: 40px; font-weight: 700; line-height: 1; color: var(--blue-hi); }
+.pw-weeks { display: flex; align-items: stretch; gap: 4px; height: 120px; border-bottom: 1px solid var(--line); }
+.pw-wk { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; }
+.pw-wk span { font-size: 11px; font-weight: 600; color: var(--muted); line-height: 1; }
+.pw-wk i { display: block; width: 100%; background: var(--blue); border-radius: 3px 3px 0 0; }
+.pw-wk.zero i { height: 3px; background: var(--line); }
+.pw-week-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: -6px; }
+.pw-big-diff { font-family: var(--f-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--blue-hi); }
 
 /* Trophy case */
 .pw-trophies { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
@@ -200,7 +206,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     <form id="pw-form" class="pw-form" novalidate>
       <div class="pw-field-in"><label for="f-date">Date</label><input id="f-date" type="date" required></div>
       <div class="pw-field-in"><label for="f-clock">Clock on watch</label><input id="f-clock" placeholder="2:51" inputmode="numeric"></div>
-      <div class="pw-field-in"><label for="f-period">Morning or afternoon</label><select id="f-period"><option value="AM">Morning (AM)</option><option value="PM">Afternoon / evening (PM)</option></select></div>
+      <div class="pw-field-in"><label for="f-period">AM or PM</label><select id="f-period"><option value="AM">AM</option><option value="PM">PM</option></select></div>
       <div class="pw-field-in"><label for="f-dur">Workout time</label><input id="f-dur" placeholder="27:32" required><span class="hint">mm:ss</span></div>
       <div class="pw-field-in"><label for="f-dist">Miles</label><input id="f-dist" placeholder="2.00" inputmode="decimal" required></div>
       <div class="pw-field-in"><label for="f-pace">Average pace</label><input id="f-pace" placeholder="13:40"><span class="hint">min:sec per mile, blank to work it out</span></div>
@@ -254,7 +260,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
   <section class="pw-sec" aria-labelledby="pw-film-h">
     <h2 class="pw-h2" id="pw-film-h">Game film: pace, walk by walk<small>Higher on the field is faster. The dashed blue line is his trend.</small></h2>
     <div class="pw-field">
-      <div class="pw-legend"><span><i style="background:var(--blue-hi)"></i>Morning walk</span><span><i style="background:var(--silver)"></i>Afternoon walk</span><span><i class="line"></i>Trend</span><span><i class="goal"></i>Goal: 13'00" a mile</span></div>
+      <div class="pw-legend"><span><i style="background:var(--blue-hi)"></i>Morning or evening walk</span><span><i style="background:var(--silver)"></i>Afternoon walk (noon to 5 PM)</span><span><i class="line"></i>Trend</span><span><i class="goal"></i>Goal: 13'00" a mile</span></div>
       <div id="pw-chart"></div>
       <div class="pw-tip" id="pw-tip" hidden></div>
     </div>
@@ -262,10 +268,10 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
 
   <section class="pw-two">
     <div class="pw-card">
-      <h3>Morning vs afternoon</h3>
+      <h3>Midday vs cooler hours</h3>
       <p id="pw-ampm-p"></p>
       <div class="pw-big-diff pw-num" id="pw-ampm-diff">—</div>
-      <div class="pw-bar-row"><span class="lab">Morning</span><span class="pw-bar"><i id="pw-am-bar"></i></span><span class="val pw-num" id="pw-am-val">—</span></div>
+      <div class="pw-bar-row"><span class="lab">Morning/eve</span><span class="pw-bar"><i id="pw-am-bar"></i></span><span class="val pw-num" id="pw-am-val">—</span></div>
       <div class="pw-bar-row"><span class="lab">Afternoon</span><span class="pw-bar"><i class="silver" id="pw-pm-bar"></i></span><span class="val pw-num" id="pw-pm-val">—</span></div>
       <p id="pw-ampm-cal"></p>
     </div>
@@ -274,6 +280,13 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
       <p id="pw-split-p"></p>
       <div id="pw-splits"></div>
       <p id="pw-split-note"></p>
+    </div>
+    <div class="pw-card">
+      <h3>Walks per week</h3>
+      <p id="pw-week-p"></p>
+      <div class="pw-weeks" id="pw-weeks" role="img" aria-label="Walks per week"></div>
+      <div class="pw-week-labels" id="pw-week-labels"></div>
+      <p id="pw-week-note"></p>
     </div>
   </section>
 
@@ -307,7 +320,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
 
 <main id="app" data-keep></main>
 
-<script type="application/json" id="walk-data" data-keep>{"walks":[{"id":"w15","seq":1,"date":null,"clock":"1:28","period":"PM","duration":1692.24,"distance":2.00,"activeCal":212,"pace":842,"hr":126},{"id":"w14","seq":2,"date":null,"clock":"1:58","period":"PM","duration":1701.27,"distance":2.00,"activeCal":212,"pace":847,"hr":122},{"id":"w01","seq":3,"date":null,"clock":"1:10","period":"PM","duration":1707.99,"distance":2.00,"activeCal":212,"pace":851,"hr":120},{"id":"w02","seq":4,"date":null,"clock":"3:37","period":"PM","duration":1708.49,"distance":2.00,"activeCal":210,"pace":851,"hr":119},{"id":"w03","seq":5,"date":null,"clock":"2:58","period":"PM","duration":1729,"distance":2.00,"activeCal":209,"pace":861,"hr":68},{"id":"w04","seq":6,"date":null,"clock":"8:26","period":"AM","duration":1675.22,"distance":2.01,"activeCal":231,"pace":831,"hr":110},{"id":"w05","seq":7,"date":null,"clock":"2:01","period":"PM","duration":1714.72,"distance":2.00,"activeCal":210,"pace":854,"hr":122},{"id":"w06","seq":8,"date":null,"clock":"2:06","period":"PM","duration":1709.17,"distance":2.00,"activeCal":215,"pace":852,"hr":123},{"id":"w07","seq":9,"date":null,"clock":"1:39","period":"PM","duration":1664.29,"distance":2.00,"activeCal":213,"pace":827,"hr":131},{"id":"w08","seq":10,"date":null,"clock":"3:16","period":"PM","duration":1674.11,"distance":2.00,"activeCal":211,"pace":832,"hr":105},{"id":"w09","seq":11,"date":null,"clock":"2:46","period":"PM","duration":1691.73,"distance":2.00,"activeCal":207,"pace":842,"hr":122},{"id":"w10","seq":12,"date":null,"clock":"3:42","period":"PM","duration":1712.61,"distance":2.01,"activeCal":208,"pace":849,"hr":118},{"id":"w11","seq":13,"date":null,"clock":"6:52","period":"AM","duration":1596.46,"distance":2.01,"activeCal":240,"pace":793,"hr":120},{"id":"w12","seq":14,"date":null,"clock":"2:51","period":"PM","duration":1652.14,"distance":2.00,"activeCal":217,"pace":820,"hr":122},{"id":"w13","seq":15,"date":"2026-11-02","clock":"5:51","period":"AM","duration":1616.68,"distance":2.01,"activeCal":233,"pace":804,"hr":122,"avgHr":129,"totalCal":286,"elevation":6,"effort":"Moderate (4)","splits":[{"miles":1,"seconds":792,"hr":126},{"miles":1,"seconds":815,"hr":133},{"miles":0.01,"seconds":10,"hr":134}]}]}</script>
+<script type="application/json" id="walk-data" data-keep>{"walks":[{"id":"w15","seq":1,"date":"2026-08-25","clock":"1:28","period":"PM","duration":1692.24,"distance":2.00,"activeCal":212,"pace":842,"hr":126},{"id":"w14","seq":2,"date":"2026-08-26","clock":"1:58","period":"PM","duration":1701.27,"distance":2.00,"activeCal":212,"pace":847,"hr":122},{"id":"w01","seq":3,"date":"2026-08-31","clock":"1:10","period":"PM","duration":1707.99,"distance":2.00,"activeCal":212,"pace":851,"hr":120},{"id":"w06","seq":4,"date":"2026-09-02","clock":"2:06","period":"PM","duration":1709.17,"distance":2.00,"activeCal":215,"pace":852,"hr":123},{"id":"w05","seq":5,"date":"2026-09-08","clock":"2:01","period":"PM","duration":1714.72,"distance":2.00,"activeCal":210,"pace":854,"hr":122},{"id":"w03","seq":6,"date":"2026-09-11","clock":"2:58","period":"PM","duration":1729,"distance":2.00,"activeCal":209,"pace":861,"hr":68},{"id":"w02","seq":7,"date":"2026-09-14","clock":"3:37","period":"PM","duration":1708.49,"distance":2.00,"activeCal":210,"pace":851,"hr":119},{"id":"w04","seq":8,"date":"2026-10-03","clock":"8:26","period":"AM","duration":1675.22,"distance":2.01,"activeCal":231,"pace":831,"hr":110},{"id":"w07","seq":9,"date":"2026-10-07","clock":"1:39","period":"PM","duration":1664.29,"distance":2.00,"activeCal":213,"pace":827,"hr":131},{"id":"w10","seq":10,"date":"2026-10-13","clock":"3:42","period":"PM","duration":1712.61,"distance":2.01,"activeCal":208,"pace":849,"hr":118},{"id":"w09","seq":11,"date":"2026-10-15","clock":"2:46","period":"PM","duration":1691.73,"distance":2.00,"activeCal":207,"pace":842,"hr":122},{"id":"w08","seq":12,"date":"2026-10-19","clock":"3:16","period":"PM","duration":1674.11,"distance":2.00,"activeCal":211,"pace":832,"hr":105},{"id":"w12","seq":13,"date":"2026-10-21","clock":"2:51","period":"PM","duration":1652.14,"distance":2.00,"activeCal":217,"pace":820,"hr":122},{"id":"w11","seq":14,"date":"2026-10-29","clock":"6:52","period":"PM","duration":1596.46,"distance":2.01,"activeCal":240,"pace":793,"hr":120},{"id":"w13","seq":15,"date":"2026-11-02","clock":"5:51","period":"AM","duration":1616.68,"distance":2.01,"activeCal":233,"pace":804,"hr":122,"avgHr":129,"totalCal":286,"elevation":6,"effort":"Moderate (4)","splits":[{"miles":1,"seconds":792,"hr":126},{"miles":1,"seconds":815,"hr":133},{"miles":0.01,"seconds":10,"hr":134}]}]}</script>
 
 <script data-keep>
 (function () {
@@ -342,6 +355,8 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     if (w.period === "AM") return true; if (w.period === "PM") return false;
     var h = parseInt(String(w.clock || "").split(":")[0], 10); return h >= 4 && h <= 11;
   }
+  function hour24(w) { var h = parseInt(String(w.clock || "").split(":")[0], 10); if (isNaN(h)) return 12; var a = isAM(w); if (!a && h < 12) h += 12; if (a && h === 12) h = 0; return h; }
+  function isAfternoon(w) { var h = hour24(w); return h >= 12 && h < 17; }
   function mean(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : 0; }
   function secs(n) { n = Math.round(Math.abs(n)); return n + " sec"; }
   function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
@@ -359,7 +374,9 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
   }
 
   /* ---------- stats ---------- */
-  function sorted() { return DATA.walks.slice().sort(function (a, b) { return a.seq - b.seq; }); }
+  function cmpWalk(a, b) { if (a.date && b.date && a.date !== b.date) return a.date < b.date ? -1 : 1; return (a.seq || 0) - (b.seq || 0); }
+  function sorted() { return DATA.walks.slice().sort(cmpWalk); }
+  function renumber(walks) { return walks.slice().sort(cmpWalk).map(function (w, i) { return Object.assign({}, w, { seq: i + 1 }); }); }
 
   function render() {
     var W = sorted(), n = W.length;
@@ -370,7 +387,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     var paces = W.map(paceOf);
     var byPace = W.slice().sort(function (a, b) { return paceOf(a) - paceOf(b); });
     var rank = byPace.indexOf(latest) + 1;
-    var am = W.filter(isAM), pm = W.filter(function (w) { return !isAM(w); });
+    var am = W.filter(function (w) { return !isAfternoon(w); }), pm = W.filter(isAfternoon);   // am = cooler hours (morning or evening), pm = noon to 5 PM
     var amPace = mean(am.map(paceOf)), pmPace = mean(pm.map(paceOf));
     var amCal = mean(am.map(function (w) { return w.activeCal || 0; })), pmCal = mean(pm.map(function (w) { return w.activeCal || 0; }));
     var k = Math.min(5, Math.floor(n / 2));
@@ -379,6 +396,18 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     var mph = totSec ? totMi / (totSec / 3600) : 0;
     var best = byPace[0], slowest = byPace[n - 1];
     var dated = W.filter(function (w) { return w.date; });
+    var DAY = 86400000, firstD = dated.length ? parseISO(dated[0].date) : null, lastD = dated.length ? parseISO(dated[dated.length - 1].date) : null;
+    var spanWeeks = firstD ? Math.max(1, (Math.round((lastD - firstD) / DAY) + 1) / 7) : 0;
+    var perWeek = spanWeeks ? dated.length / spanWeeks : 0;
+    var minPerWeek = spanWeeks ? dated.reduce(function (s, w) { return s + w.duration; }, 0) / 60 / spanWeeks : 0;
+    var maxGap = 0, gapFrom = null, gapTo = null;
+    for (var gi = 1; gi < dated.length; gi++) {
+      var g = Math.round((parseISO(dated[gi].date) - parseISO(dated[gi - 1].date)) / DAY);
+      if (g > maxGap) { maxGap = g; gapFrom = dated[gi - 1]; gapTo = dated[gi]; }
+    }
+    var DAYNAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], dayCount = [0,0,0,0,0,0,0];
+    dated.forEach(function (w) { dayCount[parseISO(w.date).getDay()]++; });
+    var topN = Math.max.apply(null, dayCount), topDays = DAYNAMES.filter(function (_, i) { return dayCount[i] === topN; });
 
     setText("pw-eyebrow", "Season stats · " + plural(n, "walk") + " logged");
 
@@ -428,8 +457,10 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     if (n >= 4 && lastK < firstK - 2) wins.push(["Getting faster", "His last " + k + " walks average " + fmtPace(lastK) + " a mile, " + secs(firstK - lastK) + " quicker than his first " + k + " (" + fmtPace(firstK) + ")."]);
     if (mph >= 3) wins.push(["Brisk by any standard", "He averages " + mph.toFixed(1) + " mph. Brisk walking starts around 3 mph, so he's well past it."]);
     if (rank <= Math.max(2, Math.ceil(n * 0.25)) && n > 2) wins.push(["Latest walk was a top performance", walkName(latest, false) + " ranked #" + rank + " of " + n + " for pace at " + fmtPace(paceOf(latest)) + "."]);
+    if (dated.length >= 6 && topN >= 3 && topDays.length <= 2) wins.push(["Creature of habit", (topDays.length === 2 ? topDays[0] + "s and " + topDays[1] + "s are his go-to days, with " + topN + " walks each." : topDays[0] + "s are his go-to day, with " + topN + " walks.")]);
 
-    if (am.length && pm.length && pmPace - amPace > 5) grow.push(["Afternoons are slower", "Afternoon walks average " + fmtPace(pmPace) + ", " + secs(pmPace - amPace) + "/mi slower than mornings. Heat and sun likely play a part: go earlier or bring water."]);
+    if (am.length && pm.length && pmPace - amPace > 5) grow.push(["Afternoons are slower", "Walks between noon and 5 PM average " + fmtPace(pmPace) + ", " + secs(pmPace - amPace) + "/mi slower than his morning and evening walks. Midday heat likely plays a part: try going earlier or later."]);
+    if (dated.length >= 4 && minPerWeek < 150) grow.push(["Walk more often", "Since " + fmtDate(dated[0].date) + " he's averaged " + perWeek.toFixed(1) + " walks (" + Math.round(minPerWeek) + " minutes) a week. The common guideline is 150 minutes a week, about 5 of these walks."]);
     var splitWalk = W.slice().reverse().find(function (w) { return Array.isArray(w.splits) && w.splits.filter(function (s) { return s.miles >= 0.99; }).length >= 2; });
     if (splitWalk) {
       var full = splitWalk.splits.filter(function (s) { return s.miles >= 0.99; });
@@ -444,7 +475,8 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     if (allTwo && n >= 5) bad.push(["Same distance every time", "Every walk is about 2 miles. Bodies adapt fast, so a 2.5 or 3-mile day once a week keeps progress coming."]);
     var elevWalks = W.filter(function (w) { return w.elevation != null; });
     if (elevWalks.length && mean(elevWalks.map(function (w) { return w.elevation; })) < 50) bad.push(["Flat routes", "Only " + elevWalks[elevWalks.length - 1].elevation + " ft of climbing on " + walkName(elevWalks[elevWalks.length - 1], false) + ". A route with a few hills burns more and works the heart harder."]);
-    if (am.length && pm.length && amCal - pmCal > 5) bad.push(["Fewer calories in the afternoon", "About " + fmtInt(pmCal) + " active cal per afternoon walk vs " + fmtInt(amCal) + " in the morning."]);
+    if (maxGap >= 7) bad.push(["Longest break: " + maxGap + " days", "No walks between " + fmtDate(gapFrom.date) + " and " + fmtDate(gapTo.date) + ". Regular walks beat long breaks: aim for no more than 2 or 3 days between them."]);
+    if (am.length && pm.length && amCal - pmCal > 5) bad.push(["Fewer calories at midday", "About " + fmtInt(pmCal) + " active cal per afternoon walk vs " + fmtInt(amCal) + " in the morning and evening."]);
     bad.push(["Slowest walk: " + fmtPace(paceOf(slowest)), walkName(slowest, false) + " took " + fmtDur(slowest.duration) + ". That's the one to beat by the most."]);
 
     [["pw-wins", wins], ["pw-grow", grow], ["pw-bad", bad]].forEach(function (pair) {
@@ -455,17 +487,45 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
 
     /* Morning vs afternoon */
     if (am.length && pm.length) {
-      setText("pw-ampm-p", "Average pace, " + plural(am.length, "morning walk") + " vs " + plural(pm.length, "afternoon walk") + ". Shorter bar is faster.");
+      setText("pw-ampm-p", "Average pace for " + plural(am.length, "morning or evening walk") + " vs " + plural(pm.length, "afternoon walk") + " (noon to 5 PM). Shorter bar is faster.");
       var diff = pmPace - amPace;
-      setText("pw-ampm-diff", diff >= 0 ? secs(diff) + "/mi faster in the morning" : secs(diff) + "/mi faster in the afternoon");
+      setText("pw-ampm-diff", diff >= 0 ? secs(diff) + "/mi faster outside midday" : secs(diff) + "/mi faster at midday");
       var mx = Math.max(amPace, pmPace);
       $("pw-am-bar").style.width = (amPace / mx * 100) + "%"; $("pw-pm-bar").style.width = (pmPace / mx * 100) + "%";
       setText("pw-am-val", fmtPace(amPace)); setText("pw-pm-val", fmtPace(pmPace));
-      setText("pw-ampm-cal", "Mornings also burn more: " + fmtInt(amCal) + " vs " + fmtInt(pmCal) + " active cal per walk.");
-      if (amCal <= pmCal) setText("pw-ampm-cal", "Calories per walk: " + fmtInt(amCal) + " morning vs " + fmtInt(pmCal) + " afternoon.");
+      setText("pw-ampm-cal", "Cooler-hour walks also burn more: " + fmtInt(amCal) + " vs " + fmtInt(pmCal) + " active cal per walk.");
+      if (amCal <= pmCal) setText("pw-ampm-cal", "Calories per walk: " + fmtInt(amCal) + " morning and evening vs " + fmtInt(pmCal) + " afternoon.");
     } else {
-      setText("pw-ampm-p", "Needs at least one morning and one afternoon walk to compare.");
+      setText("pw-ampm-p", "Needs at least one afternoon walk and one morning or evening walk to compare.");
       setText("pw-ampm-diff", "—"); setText("pw-ampm-cal", "");
+    }
+
+    /* Walks per week */
+    var wk = $("pw-weeks"); wk.innerHTML = "";
+    if (firstD) {
+      var monday = function (d) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; };
+      var today = new Date(), endD = lastD > today ? lastD : today, wEnd = monday(endD), weeks = [];
+      for (var wd = monday(firstD); wd <= wEnd; wd = new Date(wd.getFullYear(), wd.getMonth(), wd.getDate() + 7)) weeks.push({ start: wd, n: 0 });
+      if (weeks.length > 20) weeks = weeks.slice(-20);
+      dated.forEach(function (w) { var m0 = monday(parseISO(w.date)).getTime(); weeks.forEach(function (x) { if (x.start.getTime() === m0) x.n++; }); });
+      var mxw = Math.max(3, Math.max.apply(null, weeks.map(function (x) { return x.n; })));
+      weeks.forEach(function (x) {
+        var col = document.createElement("div"); col.className = "pw-wk" + (x.n ? "" : " zero");
+        var c = document.createElement("span"); c.textContent = x.n ? String(x.n) : "";
+        var bar = document.createElement("i"); if (x.n) bar.style.height = (x.n / mxw * 100) + "%";
+        col.setAttribute("aria-label", "Week of " + MONTHS[x.start.getMonth()] + " " + x.start.getDate() + ": " + plural(x.n, "walk"));
+        col.append(c, bar); wk.append(col);
+      });
+      var lab = $("pw-week-labels"); lab.innerHTML = "";
+      var l1 = document.createElement("span"); l1.textContent = MONTHS[weeks[0].start.getMonth()] + " " + weeks[0].start.getDate();
+      var l2 = document.createElement("span"); var lw0 = weeks[weeks.length - 1].start; l2.textContent = "Week of " + MONTHS[lw0.getMonth()] + " " + lw0.getDate();
+      lab.append(l1, l2);
+      var activeW = weeks.filter(function (x) { return x.n > 0; }).length, bestW = Math.max.apply(null, weeks.map(function (x) { return x.n; }));
+      setText("pw-week-p", "Each bar is one week, Monday to Sunday, up to this week. Taller is better.");
+      setText("pw-week-note", activeW + " of " + weeks.length + " weeks had a walk. His best week had " + plural(bestW, "walk") + "; 5 a week would hit the 150-minute guideline.");
+    } else {
+      setText("pw-week-p", "Add dates to walks to see how often he gets out.");
+      setText("pw-week-note", "");
     }
 
     /* Splits */
@@ -598,9 +658,10 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     W.forEach(function (w, i) {
       var last = i === n - 1;
       if (i === bestIdx) el("circle", { cx: x(i), cy: y(ps[i]), r: 10, fill: "none", stroke: "#4cc38a", "stroke-width": 2 }, svg);
-      el("circle", { cx: x(i), cy: y(ps[i]), r: last ? 7 : 5, fill: isAM(w) ? "#39a6e6" : "#b0b7bc", stroke: "#111922", "stroke-width": 2 }, svg);
+      el("circle", { cx: x(i), cy: y(ps[i]), r: last ? 7 : 5, fill: isAfternoon(w) ? "#b0b7bc" : "#39a6e6", stroke: "#111922", "stroke-width": 2 }, svg);
     });
-    var lw = W[n - 1], lab = el("text", { x: x(n - 1) - 10, y: y(ps[n - 1]) - 12, "text-anchor": "end", fill: "#f3f6f8", "font-size": 12, "font-weight": 600, "font-family": "Barlow, sans-serif" }, svg);
+    var below = n > 1 && ps[n - 2] < ps[n - 1] + 20;
+    var lw = W[n - 1], lab = el("text", { x: x(n - 1) - 10, y: y(ps[n - 1]) + (below ? 22 : -12), "text-anchor": "end", fill: "#f3f6f8", "font-size": 12, "font-weight": 600, "font-family": "Barlow, sans-serif" }, svg);
     lab.textContent = "Latest " + fmtPace(ps[n - 1]);
     // hover / tap targets
     var colW = n === 1 ? iw : iw / (n - 1);
@@ -663,7 +724,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
   function setReadOnly() { canWrite = false; $("pw-open-add").hidden = true; $("pw-mode").hidden = false; $("pw-add").hidden = true; render(); }
 
   function removeWalk(id, btn) {
-    var next = { walks: DATA.walks.filter(function (w) { return w.id !== id; }) };
+    var next = { walks: renumber(DATA.walks.filter(function (w) { return w.id !== id; })) };
     var st = document.createElement("span"); st.className = "pw-status"; btn.replaceWith(st);
     saveData(next, st);
   }
@@ -720,7 +781,7 @@ body { background: var(--ink); color: var(--fg); font-family: var(--f-body); fon
     }
     delete st.dataset.dupOk;
     $("pw-save").disabled = true;
-    saveData({ walks: walks.concat(base ? [] : [w]) }, st).then(function () { $("pw-save").disabled = false; });
+    saveData({ walks: renumber(walks.concat(base ? [] : [w])) }, st).then(function () { $("pw-save").disabled = false; });
   }
 
   /* reading a screenshot with Claude */
